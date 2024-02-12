@@ -63,7 +63,7 @@ function Form({ onAddItems }) {
       </select>
       <input 
         type="text" 
-        placeholder="Barang yang mau dibawa" 
+        placeholder="Barang yang dibawa" 
         value={description}
         onChange={(e) => setDescription(e.target.value)}
       />
