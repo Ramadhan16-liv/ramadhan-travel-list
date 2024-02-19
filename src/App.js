@@ -12,28 +12,43 @@ export default function App() {
     setItems((items) => [...items, item]);
   }
 
-  function handleDeleteItem(itemId) {
-    const updatedItems = items.filter((item) => item.id !== itemId);
-    setItems(updatedItems);
+  function handleDeleteItem(id) {
+    setItems((items) => items.filter((item) => item.id !== id));
+  }
+
+  function handleUpdateItem(id) {
+    setItems((items) => 
+      items.map((item) =>
+        item.id === id ? {...item, packed: !item.packed } : item
+      )
+    );    
   }
 
   return (
     <div className="app">
       <Logo />
       <Form onAddItems={handleAddItems} />
-      <PackingList items={items} onDeleteItem={handleDeleteItem}/>
-      <Stats />
+      <PackingList 
+        items={items} 
+        onDeleteItem={handleDeleteItem}
+        onUpdateItem={handleUpdateItem}
+        />
+      <Stats items={items} />
     </div>
   );
 }
 
 function Logo() {
-  return <h1>🧳 Jalan Jalan cuyy 🛫</h1>;
+  return (
+    <div>
+      <h1>🧳 Jalan Jalan cuyy 🛫</h1>
+    </div>
+  );
 }
 
 function Form({ onAddItems }) {
   const [description, setDescription] = useState("");
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(1);  
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -51,7 +66,6 @@ function Form({ onAddItems }) {
 
   return (
     <form className="add-form" onSubmit={handleSubmit}>
-      <h3>Apa saja yang anda bawa?🤔</h3>
       <h3>Mari Checklist Barang 😁✏️</h3>
       <select
         value={quantity}
@@ -63,44 +77,69 @@ function Form({ onAddItems }) {
       </select>
       <input 
         type="text" 
-        placeholder="Barang yang mau dibawa" 
+        placeholder="Barang yang dibawa" 
         value={description}
         onChange={(e) => setDescription(e.target.value)}
       />
       <button>Bawa</button>
     </form>
-  );
+  );  
 }
 
 
-function PackingList({ items, onDeleteItem}) {
+function PackingList({ items, onDeleteItem, onUpdateItem}) {
   return (
     <div className="list">
       <ul>
         {items.map((item) => (
-          <Item item={item} key={item.id} onDelete={() => onDeleteItem(item.id)}   />
+          <Item 
+          item={item} 
+          key={item.id} 
+          onDeleteItem={onDeleteItem}   
+          onUpdateItem={onUpdateItem}
+          />
         ))}
       </ul>
     </div>
   );
 }
 
-function Item({ item, onDelete}) {
+function Item({ item, onDeleteItem, onUpdateItem }) {
   return (
     <li>
+      <input
+        type="checkbox"
+        value={item.packed}
+        onChange={() => onUpdateItem(item.id)}
+        />
       <span style={item.packed ? { textDecoration: "line-through" } : {}}>
         {item.quantity} {item.description}
       </span>
-      <button onClick={() => onDelete(item.id)}>❌</button>
+      <button onClick={() => onDeleteItem(item.id)}>❌</button>
     </li>
   );
 }
 
-function Stats() {
+function Stats({ items }) {
+
+  if (!items.length)
+    return (
+     <p className="stats">
+      <em>Mulai Tambahkan Barang Bawaan Anda</em>
+     </p>
+    );
+
+  const numItems = items.length;
+  const numPacked = items.filter((item) => item.packed).length;
+  const percentage = Math.round((numPacked / numItems) * 100);  
+
   return (
     <footer className="stats">
       <em>
-        👜 kamu punya 0 barang di daftar, dan sudah packing 0 barang (0%){""}
+        {percentage === 100
+          ? "Kamu Siap Berangkat 🛺🚕"
+          : `👜 Kamu punya ${numItems} barang di daftar, dan sudah packing ${numPacked}
+       barang (${percentage}%)`}
       </em>
     </footer>
   );
